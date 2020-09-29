@@ -180,4 +180,4 @@ cov_prov_weekly_comparison %>%
   theme(plot.title.position = "plot")
 
 
-# Author acknowledge this code was tranformed from @aswansyahputra (https://gist.github.com/aswansyahputra/acc249f6ad716ae007f8879c0ad8f353). Thanks for the shared code.
+# Author acknowledge this code was tranformed from @aswansyahputra (https://gist.github.com/aswansyahputra/acc249f6ad716ae007f8879c0ad8f353). Thanks in advanced for the knowledge.
