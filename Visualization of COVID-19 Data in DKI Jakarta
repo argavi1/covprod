@@ -1,0 +1,180 @@
+# Load Packages
+
+library(httr)
+library(dplyr)
+library(lubridate)
+library(tidyr)
+library(zoo)
+library(ggplot2)
+library(hrbrthemes)
+
+# Fetch COVID 19 data in regional level DKI Jakarta
+
+resp <- GET("https://data.covid19.go.id/public/api/prov_detail_DKI_JAKARTA.json")
+status_code(resp)
+
+cov_prov_raw <- content(resp, as = "parsed", simplifyVector = TRUE)
+str(cov_prov_raw, max.level = 2, vec.len = 3)
+
+# Inspect the daily cases
+
+cov_prov_daily <-
+  cov_prov_raw$list_perkembangan %>%
+  transmute(
+    date = as.POSIXct(tanggal / 1000, origin = "1970-01-01") %>%
+      as.Date(),
+    newcase = KASUS,
+    recovered = SEMBUH,
+    death = MENINGGAL
+  )
+
+glimpse(cov_prov_daily)
+
+# Turn table into graph
+
+cov_prov_daily %>%
+  ggplot(aes(date, newcase)) +
+  geom_col(fill = "firebrick3") +
+  scale_x_date(
+    breaks = "2 weeks",
+    guide = guide_axis(check.overlap = TRUE, n.dodge = 2),
+    labels = scales::label_date(format = "%e %b"),
+    expand = c(0.005, 0.005)
+  ) +
+  labs(
+    x = NULL,
+    y = "The Accumulation New Cases",
+    title = "The Daily Accumulation of COVID-19 New Cases in DKI Jakarta",
+    subtitle = "The highest accumulation of COVID-19 new cases happened in 16th September 2020",
+    caption = "Data source: covid.19.go.id"
+  ) +
+  theme_ipsum_tw(
+    base_size = 13,
+    plot_title_size = 21,
+    grid = "Y",
+    ticks = TRUE
+  ) +
+  theme(plot.title.position = "plot")
+
+# Load Packages
+
+library(httr)
+library(dplyr)
+library(lubridate)
+library(tidyr)
+library(zoo)
+library(ggplot2)
+library(hrbrthemes)
+
+# Fetch COVID 19 data in regional level DKI Jakarta
+
+resp <- GET("https://data.covid19.go.id/public/api/prov_detail_DKI_JAKARTA.json")
+status_code(resp)
+
+cov_prov_raw <- content(resp, as = "parsed", simplifyVector = TRUE)
+str(cov_prov_raw, max.level = 2, vec.len = 3)
+
+# Transform daily new cases into weekly new cases
+
+cov_prov_weekly <-
+  cov_prov_daily %>%
+  group_by(
+    year = year(date),
+    week = week(date)
+  ) %>%
+  summarise(
+    across(c(newcase:death), ~ sum(.x, na.rm = TRUE))
+  ) %>%
+  ungroup()
+
+glimpse(cov_prov_weekly)
+
+# Turn table into graph
+
+cov_prov_weekly %>%
+  ggplot(aes(week, newcase)) +
+  geom_col(fill = "firebrick3") +
+  labs(
+    x = NULL,
+    y = "The Accumulation New Cases",
+    title = "The Weekly Accumulation of COVID-19 New Cases in DKI Jakarta",
+    subtitle = "The highest accumulation of COVID-19 new cases happened in 38th Week",
+    caption = "Data source: covid.19.go.id"
+  ) +
+  theme_ipsum_tw(
+    base_size = 13,
+    plot_title_size = 21,
+    grid = "Y",
+    ticks = TRUE
+  ) +
+  theme(plot.title.position = "plot")
+  
+  # Load Packages
+
+library(httr)
+library(dplyr)
+library(lubridate)
+library(tidyr)
+library(zoo)
+library(ggplot2)
+library(hrbrthemes)
+
+# Fetch COVID 19 data in regional level DKI Jakarta
+
+resp <- GET("https://data.covid19.go.id/public/api/prov_detail_DKI_JAKARTA.json")
+status_code(resp)
+
+cov_prov_raw <- content(resp, as = "parsed", simplifyVector = TRUE)
+str(cov_prov_raw, max.level = 2, vec.len = 3)
+
+# Is this week is better than last week?
+
+cov_prov_weekly_comparison <-
+  cov_prov_weekly %>%
+  transmute(
+    year,
+    week,
+    newcase,
+    newcase_lastweek = dplyr::lag(newcase, 1), # can you explain why we use of `::` operator here?
+    newcase_lastweek = replace_na(newcase_lastweek, 0),
+    is_better = newcase < newcase_lastweek
+  )
+glimpse(cov_prov_weekly_comparison)
+
+cov_prov_weekly_comparcov_prov_weekly_comparison <-
+  cov_prov_weekly %>%
+  transmute(
+    year,
+    week,
+    newcase,
+    newcase_lastweek = dplyr::lag(newcase, 1),
+    newcase_lastweek = replace_na(newcase_lastweek, 0),
+    is_better = newcase < newcase_lastweek
+  )
+glimpse(cov_prov_weekly_comparison)
+
+cov_prov_weekly_comparison %>%
+  count(is_better)ison %>%
+  count(is_better)
+
+# Turn table into graph
+
+cov_prov_weekly_comparison %>%
+  ggplot(aes(week, newcase, fill = is_better)) +
+  geom_col(show.legend = FALSE) +
+  scale_x_continuous(expand = c(0, 0)) +
+  scale_fill_manual(values = c("TRUE" = "seagreen3", "FALSE" = "salmon")) +
+  labs(
+    x = NULL,
+    y = "The Accumulation New Cases",
+    title = "The Weekly Accumulation of COVID-19 New Cases in DKI Jakarta",
+    subtitle = "The green column shows the addition of new cases was less than a week earlier",
+    caption = "Data source: covid.19.go.id"
+  ) +
+  theme_ipsum_tw(
+    base_size = 13,
+    plot_title_size = 21,
+    grid = "Y",
+    ticks = TRUE
+  ) +
+  theme(plot.title.position = "plot")
